@@ -302,12 +302,12 @@ HSL转换 → 颜色量化 → 差量检查 → 地图更新
 ## 开发者
 
 - 主要开发: EdgeDev Team
-- 开源协议: MIT
-- GitHub: https://github.com/edgedev/EdgeBrowser
+- 开源协议: GPL-V3
+- GitHub: https://github.com/viakkkv/EdgeBrowser
 
 ## 许可证
 
-MIT License - 详见 LICENSE 文件
+GPL-V3 - 详见 LICENSE 文件
 
 ## 支持
 
