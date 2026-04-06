@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgeBrowser Bridge Client</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            text-align: center; 
+            padding: 30px 0; 
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .header h1 { 
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .header p {
+            margin-top: 10px;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .status { 
+            padding: 15px 25px; 
+            margin: 15px 0; 
+            border-radius: 10px; 
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .status.connected { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .status.disconnected { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+        .status.waiting { background: linear-gradient(135deg, #f7971e, #ffd200); color: #333; }
+        .config-panel { 
+            background: rgba(0,0,0,0.4); 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .config-panel h3 { 
+            color: #ffd700; 
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .form-group { 
+            margin: 15px 0; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 12px 15px; 
+            background: rgba(255,255,255,0.1); 
+            border: 2px solid rgba(255,255,255,0.2); 
+            color: #fff; 
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(255,255,255,0.15);
+        }
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .btn { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: #fff; 
+            border: none; 
+            padding: 15px 35px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .browser-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        #browserFrame { 
+            flex: 1;
+            height: 600px; 
+            border: 3px solid rgba(255,255,255,0.3); 
+            background: #000; 
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .info-panel {
+            width: 300px;
+            background: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .info-panel h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .info-panel p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .info-panel code {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .stats {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .stats div {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stats span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .url-bar {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .url-bar input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        .url-bar button {
+            padding: 12px 25px;
+        }
+        @media (max-width: 1024px) {
+            .browser-container {
+                flex-direction: column;
+            }
+            .info-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 EdgeBrowser Bridge Client</h1>
+            <p>Minecraft 实时网页浏览器渲染系统</p>
+        </div>
+
+        <div id="status" class="status waiting">⏳ 等待连接...</div>
+
+        <div class="config-panel" id="configForm">
+            <h3>⚙️ 连接配置</h3>
+            <div class="form-group">
+                <label for="wsUrl">WebSocket 地址:</label>
+                <input type="text" id="wsUrl" value="ws://localhost:9527" placeholder="ws://服务器地址:端口">
+            </div>
+            <div class="form-group">
+                <label for="authKey">认证密钥:</label>
+                <input type="password" id="authKey" value="edge-browser-2024-secret" placeholder="输入认证密钥">
+            </div>
+            <div class="form-group">
+                <label for="browserId">浏览器 ID (可选):</label>
+                <input type="text" id="browserId" placeholder="留空自动分配">
+            </div>
+            <button class="btn" onclick="connect()">🔗 连接服务器</button>
+        </div>
+
+        <div class="url-bar" id="urlBar" style="display:none;">
+            <input type="text" id="urlInput" value="https://www.bing.com" placeholder="输入网址...">
+            <button class="btn" onclick="navigate()">🚀 导航</button>
+        </div>
+
+        <div class="browser-container">
+            <iframe id="browserFrame" src="about:blank" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+            
+            <div class="info-panel">
+                <h3>📖 使用说明</h3>
+                <p>1. 在 Minecraft 使用 <code>/edge give</code> 获取选择器</p>
+                <p>2. 用金铲子选择两个角点</p>
+                <p>3. 使用 <code>/edge create [id]</code> 创建</p>
+                <p>4. 在此页面连接 WebSocket</p>
+                <p>5. 网页将实时渲染到地图</p>
+                
+                <div class="stats">
+                    <h3>📊 统计信息</h3>
+                    <div>状态: <span id="statStatus">未连接</span></div>
+                    <div>帧率: <span id="statFps">0 FPS</span></div>
+                    <div>分辨率: <span id="statRes">-</span></div>
+                    <div>总帧数: <span id="statFrames">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentBrowserId = null;
+        let webWidth = 640;
+        let webHeight = 480;
+        let targetFps = 8;
+        let captureInterval = null;
+        let frameCount = 0;
+        let fpsCounter = 0;
+        let lastFpsTime = Date.now();
+
+        function connect() {
+            const wsUrl = document.getElementById('wsUrl').value;
+            const authKey = document.getElementById('authKey').value;
+            const browserId = document.getElementById('browserId').value || null;
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+
+            updateStatus('waiting', '⏳ 正在连接...');
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = function() {
+                    const authMsg = {
+                        type: 'auth',
+                        key: authKey,
+                        browserId: browserId
+                    };
+                    ws.send(JSON.stringify(authMsg));
+                };
+
+                ws.onmessage = function(event) {
+                    if (typeof event.data === 'string') {
+                        try {
+                            const msg = JSON.parse(event.data);
+                            handleMessage(msg);
+                        } catch (e) {
+                            console.error('JSON解析错误:', e);
+                        }
+                    }
+                };
+
+                ws.onclose = function() {
+                    updateStatus('disconnected', '❌ 连接已断开');
+                    stopCapture();
+                    document.getElementById('configForm').style.display = 'block';
+                    document.getElementById('urlBar').style.display = 'none';
+                    updateStats('断开', '0 FPS', '-', frameCount);
+                };
+
+                ws.onerror = function(error) {
+                    updateStatus('disconnected', '❌ 连接错误');
+                    console.error('WebSocket错误:', error);
+                };
+            } catch (e) {
+                updateStatus('disconnected', '❌ 连接失败: ' + e.message);
+            }
+        }
+
+        function handleMessage(msg) {
+            switch (msg.type) {
+                case 'auth_result':
+                    if (msg.success) {
+                        currentBrowserId = msg.browserId || document.getElementById('browserId').value;
+                        updateStatus('connected', '✅ 已连接！等待配置...');
+                        document.getElementById('configForm').style.display = 'none';
+                        document.getElementById('urlBar').style.display = 'flex';
+                        updateStats('已连接', '等待中', '-', frameCount);
+                    } else {
+                        updateStatus('disconnected', '❌ 认证失败: ' + (msg.message || '未知错误'));
+                    }
+                    break;
+
+                case 'config':
+                    webWidth = msg.width || 640;
+                    webHeight = msg.height || 480;
+                    targetFps = msg.fps || 8;
+                    if (msg.url) {
+                        document.getElementById('browserFrame').src = msg.url;
+                        document.getElementById('urlInput').value = msg.url;
+                    }
+                    updateStats('运行中', targetFps + ' FPS', webWidth + 'x' + webHeight, frameCount);
+                    startCapture();
+                    break;
+
+                case 'navigate':
+                    document.getElementById('browserFrame').src = msg.url;
+                    document.getElementById('urlInput').value = msg.url;
+                    sendStatus('loading', msg.url);
+                    break;
+
+                case 'click':
+                    simulateClick(msg.x, msg.y, msg.button);
+                    break;
+
+                case 'scroll':
+                    simulateScroll(msg.deltaX, msg.deltaY);
+                    break;
+
+                case 'key':
+                    simulateKey(msg.key, msg.shift, msg.ctrl, msg.alt);
+                    break;
+
+                case 'input':
+                    simulateInput(msg.text);
+                    break;
+
+                case 'command':
+                    handleCommand(msg.command);
+                    break;
+
+                case 'close':
+                    ws.close();
+                    break;
+            }
+        }
+
+        function simulateClick(x, y, button) {
+            const frame = document.getElementById('browserFrame');
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                const clickX = x * frame.clientWidth;
+                const clickY = y * frame.clientHeight;
+
+                let buttonNum = 0;
+                if (button === 'middle') buttonNum = 1;
+                else if (button === 'right') buttonNum = 2;
+
+                const events = ['mousedown', 'mouseup', 'click'];
+                events.forEach(type => {
+                    const event = new MouseEvent(type, {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: clickX,
+                        clientY: clickY,
+                        button: buttonNum
+                    });
+                    doc.dispatchEvent(event);
+                });
+            } catch (e) {
+                console.warn('点击事件发送失败:', e);
+            }
+        }
+
+        function simulateScroll(deltaX, deltaY) {
+            const frame = document.getElementById('browserFrame');
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                const wheelEvent = new WheelEvent('wheel', {
+                    deltaX: deltaX,
+                    deltaY: deltaY,
+                    bubbles: true
+                });
+                doc.dispatchEvent(wheelEvent);
+            } catch (e) {
+                console.warn('滚动事件发送失败:', e);
+            }
+        }
+
+        function simulateKey(key, shift, ctrl, alt) {
+            const frame = document.getElementById('browserFrame');
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                const keyEvent = new KeyboardEvent('keydown', {
+                    key: key,
+                    code: key,
+                    shiftKey: shift,
+                    ctrlKey: ctrl,
+                    altKey: alt,
+                    bubbles: true
+                });
+                doc.dispatchEvent(keyEvent);
+            } catch (e) {
+                console.warn('按键事件发送失败:', e);
+            }
+        }
+
+        function simulateInput(text) {
+            const frame = document.getElementById('browserFrame');
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                const activeElement = doc.activeElement;
+                if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                    activeElement.value += text;
+                    const inputEvent = new InputEvent('input', {
+                        data: text,
+                        bubbles: true
+                    });
+                    activeElement.dispatchEvent(inputEvent);
+                }
+            } catch (e) {
+                console.warn('输入事件发送失败:', e);
+            }
+        }
+
+        function handleCommand(command) {
+            if (command === 'back') {
+                window.history.back();
+            } else if (command === 'forward') {
+                window.history.forward();
+            } else if (command === 'refresh') {
+                const frame = document.getElementById('browserFrame');
+                frame.src = frame.src;
+            } else if (command.startsWith('scale:')) {
+                const scale = parseFloat(command.split(':')[1]);
+                document.getElementById('browserFrame').style.transform = `scale(${scale})`;
+            } else if (command.startsWith('rotate:')) {
+                const angle = command.split(':')[1];
+                document.getElementById('browserFrame').style.transform = `rotate(${angle}deg)`;
+            } else if (command === 'clear') {
+                document.getElementById('browserFrame').src = 'about:blank';
+            }
+        }
+
+        function navigate() {
+            const url = document.getElementById('urlInput').value;
+            if (url && ws && ws.readyState === WebSocket.OPEN) {
+                document.getElementById('browserFrame').src = url;
+                ws.send(JSON.stringify({
+                    type: 'status',
+                    status: 'navigating',
+                    url: url
+                }));
+            }
+        }
+
+        function startCapture() {
+            stopCapture();
+            const interval = Math.max(50, 1000 / targetFps);
+
+            captureInterval = setInterval(() => {
+                if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+                const frame = document.getElementById('browserFrame');
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = webWidth;
+                    canvas.height = webHeight;
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    
+                    ctx.drawImage(frame, 0, 0, webWidth, webHeight);
+                    
+                    canvas.toBlob((blob) => {
+                        if (blob && ws.readyState === WebSocket.OPEN) {
+                            ws.send(blob);
+                            frameCount++;
+                            fpsCounter++;
+                            
+                            const now = Date.now();
+                            if (now - lastFpsTime >= 1000) {
+                                const fps = Math.round(fpsCounter * 1000 / (now - lastFpsTime));
+                                updateStats('运行中', fps + ' FPS', webWidth + 'x' + webHeight, frameCount);
+                                fpsCounter = 0;
+                                lastFpsTime = now;
+                            }
+                        }
+                    }, 'image/jpeg', 0.85);
+                } catch (e) {
+                    console.warn('捕获帧失败:', e);
+                }
+            }, interval);
+        }
+
+        function stopCapture() {
+            if (captureInterval) {
+                clearInterval(captureInterval);
+                captureInterval = null;
+            }
+        }
+
+        function sendStatus(status, url) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'status',
+                    browserId: currentBrowserId,
+                    status: status,
+                    url: url
+                }));
+            }
+        }
+
+        function updateStatus(type, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status ' + type;
+            statusEl.textContent = message;
+        }
+
+        function updateStats(status, fps, res, frames) {
+            document.getElementById('statStatus').textContent = status;
+            document.getElementById('statFps').textContent = fps;
+            document.getElementById('statRes').textContent = res;
+            document.getElementById('statFrames').textContent = frames;
+        }
+
+        document.getElementById('browserFrame').addEventListener('load', function() {
+            sendStatus('loaded', this.src);
+        });
+
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                navigate();
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (ws) {
+                ws.close();
+            }
+        });
+    </script>
+</body>
+</html>

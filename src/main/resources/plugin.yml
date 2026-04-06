@@ -1,0 +1,87 @@
+name: EdgeBrowser
+version: '${version}'
+main: com.mc.edgebrowser.EdgeBrowser
+api-version: '1.13'
+prefix: EdgeBrowser
+authors: [EdgeDev]
+description: 在地图画上实时渲染浏览器画面，支持视频播放与网页浏览
+website: https://github.com/edgedev
+
+commands:
+  edge:
+    description: EdgeBrowser 主命令
+    usage: /edge <create|remove|list|info|reload|url|click|pause|resume|clear|teleport|brightness|scale|fps|border|title|key|scroll|input|back|forward|refresh|toggle|rotate|help>
+    permission: edge.admin
+    aliases: [eb, browser]
+
+permissions:
+  # === 管理员权限 ===
+  edge.admin:
+    description: 管理员权限 - 创建/删除/配置浏览器
+    default: op
+
+  # === 基础使用权限 ===
+  edge.use:
+    description: 使用权限 - 基础交互与浏览
+    default: true
+
+  # === 子命令权限 ===
+  edge.command.url:
+    description: 导航到指定URL
+    default: true
+  edge.command.click:
+    description: 点击交互 (空手左键/右键)
+    default: true
+  edge.command.input:
+    description: 键盘输入文本
+    default: true
+  edge.command.scroll:
+    description: 滚轮滚动页面 / 指令滚动
+    default: true
+  edge.command.key:
+    description: 发送按键 (如回车、方向键)
+    default: true
+  edge.command.back:
+    description: 浏览器后退
+    default: true
+  edge.command.forward:
+    description: 浏览器前进
+    default: true
+  edge.command.refresh:
+    description: 刷新页面
+    default: true
+
+  # === 高级控制权限 (默认仅OP) ===
+  edge.command.pause:
+    description: 暂停渲染
+    default: op
+  edge.command.resume:
+    description: 恢复渲染
+    default: op
+  edge.command.clear:
+    description: 清空画面
+    default: op
+  edge.command.teleport:
+    description: 传送到浏览器位置
+    default: op
+  edge.command.brightness:
+    description: 调节画面亮度
+    default: op
+  edge.command.scale:
+    description: 调节页面缩放
+    default: op
+  edge.command.fps:
+    description: 调节目标帧率
+    default: op
+  edge.command.border:
+    description: 设置边框方块材质
+    default: op
+  edge.command.title:
+    description: 设置浏览器标题
+    default: op
+  edge.command.rotate:
+    description: 旋转画面角度
+    default: op
+  edge.command.toggle:
+    description: 开关浏览器
+    default: op

@@ -1,0 +1,117 @@
+render:
+  target-fps: 8
+  quality: high
+  brightness: 5
+  color-enhance: 15
+  delta-update: true
+  delta-threshold: 8
+  bilinear: false
+
+server-browser:
+  enabled: false
+  browser-type: chromium
+  browser-path: ""
+  web-width: 640
+  web-height: 480
+  headless: true
+  extra-args: "--disable-gpu --no-sandbox --disable-dev-shm-usage"
+
+bridge:
+  enabled: true
+  port: 9527
+  bind: "0.0.0.0"
+  auth-key: "edge-browser-2024-secret"
+  timeout: 30
+  auto-reconnect: true
+  max-connections: 10
+
+defaults:
+  default-url: "https://www.bing.com"
+  map-size: 1
+  auto-show: true
+  show-range: 20
+  interact-range: 20
+  url-whitelist: []
+  url-blacklist: []
+  allow-zoom: true
+
+frames:
+  selector:
+    material: GOLDEN_SHOVEL
+    name: "&6&l[Edge] &f区域选择器"
+    lore:
+      - "&7左键选择第一个角点"
+      - "&7右键选择第二个角点"
+      - "&7然后使用 &e/edge create"
+    glow: true
+  border:
+    material: LIGHT_GRAY_STAINED_GLASS
+  floor:
+    material: BLACK_CONCRETE
+
+interaction:
+  left-click: click
+  right-click: middle-click
+  shift-left-click: drag-start
+  shift-right-click: drag-end
+  sneak-disable: false
+  cooldown: 50
+  click-particle: FLAME
+  click-sound: "ENTITY_PLAYER_BURP"
+
+permissions:
+  require-use-permission: false
+  require-click-permission: false
+  require-url-permission: false
+  require-key-permission: false
+
+messages:
+  prefix: "&8[&bEdge&8] "
+  no-permission: "&c你没有权限执行此操作。"
+  selector-given: "&a已获得区域选择器！"
+  pos1-set: "&a第一个角点已设置: &f(%x%, %y%, %z%)"
+  pos2-set: "&a第二个角点已设置: &f(%x%, %y%, %z%)"
+  pos-cleared: "&e选择的位置已清除。"
+  browser-created: "&a浏览器创建成功！ID: &e%id% &a| 尺寸: &e%w%x%h%"
+  browser-removed: "&a浏览器 &e%id% &a已删除。"
+  browser-list: "&b=== 浏览器列表 ==="
+  browser-list-item: "&e%id% &7- &f%url% &7(%w%x%h%) %status%"
+  browser-info: "&b=== 浏览器信息 ==="
+  browser-info-id: "&eID: &f%id%"
+  browser-info-url: "&eURL: &f%url%"
+  browser-info-size: "&e尺寸: &f%w% x %h% 地图"
+  browser-info-fps: "&eFPS: &f%fps%"
+  browser-info-status: "&e状态: &f%status%"
+  browser-info-location: "&e位置: &f%world% (%x%, %y%, %z%)"
+  no-selection: "&c请先用金铲子选择两个角点！"
+  invalid-selection: "&c选择区域无效！宽高必须在1-10之间。"
+  not-found: "&c浏览器 &e%id% &c不存在。"
+  url-navigated: "&a已导航到: &e%url%"
+  url-blocked: "&c此URL已被阻止。"
+  paused: "&e浏览器渲染已暂停。"
+  resumed: "&a浏览器渲染已恢复。"
+  cleared: "&a画面已清空。"
+  teleported: "&a已传送到浏览器 &e%id%"
+  brightness-set: "&a亮度已设为: &e%value%"
+  scale-set: "&a缩放已设为: &e%value%"
+  fps-set: "&a帧率已设为: &e%value%"
+  border-set: "&a边框已更新。"
+  title-set: "&a标题已设为: &e%title%"
+  key-sent: "&a按键已发送: &e%key%"
+  scroll-done: "&a滚动完成: &e%delta%"
+  reloaded: "&a配置已重新加载。"
+  input-sent: "&a输入已发送: &e%text%"
+  help-header: "&b&l======= EdgeBrowser 帮助 ======="
+  help-footer: "&b&l================================"
+  bridge-waiting: "&e等待客户端连接中... 请打开浏览器访问桥接页面。"
+  bridge-connected: "&a客户端已连接！浏览器已激活。"
+  bridge-disconnected: "&c客户端连接已断开。"
+  already-exists: "&c此ID的浏览器已存在。"
+  click-cooldown: "&e请稍后再点击。"
+
+debug:
+  enabled: false
+  log-packets: false
+  log-clicks: false
+  log-fps: false
+  show-overlay: false
